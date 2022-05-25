@@ -13,7 +13,21 @@ app.get("/", (req, res) => {
     res.send("Picker server Running Well")
 
 })
+function verifyJWT(req, res, next) {
+    const authHeader = req.headers.authorization
+    if (!authHeader) {
+        return res.status(401).send({ message: "Unauthorized" })
+    }
+    const token = authHeader.split(" ")[1]
 
+    jwt.verify(token, process.env.PRIVATE_KEY, function (err, decoded) {
+        if (err) {
+            return res.status(403).send({ message: "Forbidden" })
+        }
+        req.decoded = decoded;
+        next()
+    })
+}
 const uri = `mongodb+srv://${process.env.USER_NAME}:${process.env.USER_PASS}@cluster0.izp32.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 async function run() {
@@ -42,16 +56,24 @@ async function run() {
             res.send({ token })
         })
         // get single items by id 
-        app.get("/purchase/:id", async(req, res) => {
+        app.get("/purchase/:id", async (req, res) => {
             const id = req.params.id
-            
+
             const query = { _id: ObjectId(id) }
-            const result=await toolsCollection.findOne(query)
+            const result = await toolsCollection.findOne(query)
             res.send(result)
         })
-        app.post("/purchase", async(req, res) => {
-           const doc=req.body     
-           const result= await ordersCollection.insertOne(doc)
+        // store order 
+        app.post("/purchase", async (req, res) => {
+            const doc = req.body
+            const result = await ordersCollection.insertOne(doc)
+            res.send(result)
+        })
+        // get  orders by user 
+        app.get("/orders",verifyJWT, async(req, res) => {
+            const email = req.query.email
+            const filter = { email: email }
+            const result = await ordersCollection.find(filter).toArray()
             res.send(result)
         })
 
