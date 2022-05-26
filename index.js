@@ -41,6 +41,12 @@ async function run() {
             const result = await toolsCollection.find().toArray()
             res.send(result)
         })
+        // adding tool 
+        app.post("/tools", async (req, res) => {
+            const tool=req.body
+            const result = await toolsCollection.insertOne(tool)
+            res.send(result)
+        })
         // making user 
         app.put("/user/:email", async (req, res) => {
             const email = req.params.email
