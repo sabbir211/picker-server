@@ -173,7 +173,7 @@ async function run() {
             const result = await rattingCollection.insertOne(doc)
             res.send(result)
          });
-        app.get("/ratting", verifyJWT,async (req, res) => {
+        app.get("/ratting",async (req, res) => {
             const result = await rattingCollection.find({}).toArray()
             res.send(result)
          });
