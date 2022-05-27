@@ -36,6 +36,7 @@ async function run() {
         const toolsCollection = client.db("tools").collection("tools")
         const usersCollection = client.db("users").collection("users")
         const ordersCollection = client.db("orders").collection("orders")
+        const rattingCollection = client.db("ratting").collection("ratting")
 
         app.get("/tools", async (req, res) => {
             const result = await toolsCollection.find().toArray()
@@ -166,7 +167,16 @@ async function run() {
             const result = await ordersCollection.updateOne(filter, doc, option)
             res.send(result)
         })
-
+        // adding ratting 
+        app.post("/ratting", async (req, res) => {
+            const doc = req.body
+            const result = await rattingCollection.insertOne(doc)
+            res.send(result)
+         });
+        app.get("/ratting", verifyJWT,async (req, res) => {
+            const result = await rattingCollection.find({}).toArray()
+            res.send(result)
+         });
     }
     finally {
 
